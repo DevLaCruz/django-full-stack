@@ -1,22 +1,31 @@
 from rest_framework import serializers
-from statelist_app.models import Property, Company
-
-class CompanySerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Company
-        fields='__all__'
+from statelist_app.models import Edification, Company
 
 
-class PropertySerializer(serializers.ModelSerializer):
-    length_address=serializers.SerializerMethodField()
+class EdificationSerializer(serializers.ModelSerializer):
+    # length_address=serializers.SerializerMethodField()
 
     class Meta:
-        model = Property
+        model = Edification
         fields = '__all__'
         # fields=['id', 'country', 'active', 'image']
         # exclude=['id']
 
-    
+
+class CompanySerializer(serializers.HyperlinkedModelSerializer):
+    edificacionlist = EdificationSerializer(many=True, read_only=True)
+    # edificacionlist=serializers.StringRelatedField(many=True, read_only=True)
+    # edificacionlist = serializers.PrimaryKeyRelatedField(
+    #    many=True, read_only=True)
+    # edificacionlist = serializers.HyperlinkedRelatedField(
+    #     many=True,
+    #     read_only=True,
+    #     view_name='edification-detail'  # Asegúrate de que este nombre de vista sea correcto
+    # )
+
+    class Meta:
+        model = Company
+        fields = '__all__'
 
     # def get_length_address(self, object):
     #     char_quatity=len(object.address)
@@ -35,8 +44,6 @@ class PropertySerializer(serializers.ModelSerializer):
     #             "Image URL must be greater than or equal to 2 characters")
     #     else:
     #         return data
-
-
 
 
 # def column_length(value):

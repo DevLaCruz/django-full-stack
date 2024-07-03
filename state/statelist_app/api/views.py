@@ -1,35 +1,48 @@
 from rest_framework.response import Response
-from statelist_app.models import Property, Company
-from statelist_app.api.serializers import PropertySerializer, CompanySerializer
+from statelist_app.models import Edification, Company
+from statelist_app.api.serializers import EdificationSerializer, CompanySerializer
 # from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.views import APIView
 
 # Create your views here.
 
+
 class CompanyAV(APIView):
     def get(self, request):
-        company = Company.objects.all()
-        serializer = CompanySerializer(company, many=True)
+        companies = Company.objects.all()
+        serializer = CompanySerializer(
+            companies, many=True, context={'request': request})
         return Response(serializer.data)
-    
+
     def post(self, request):
-        serializer=CompanySerializer(data=request.data, many=True)
+        serializer = CompanySerializer(data=request.data, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
         else:
             Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class PropertyListAV(APIView):
+
+class CompanyDetailAV(APIView):
+    def get(self, request, pk):
+        try:
+            company = Company.objects.get(pk=pk)
+        except Company.DoesNotExist:
+            return Response({'Error': 'La empresa no existe'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = CompanySerializer(company, context={'request': request})
+        return Response(serializer.data)
+    
+
+class EdificationListAV(APIView):
 
     def get(self, request):
-        state = Property.objects.all()
-        serializer = PropertySerializer(state, many=True)
+        state = Edification.objects.all()
+        serializer = EdificationSerializer(state, many=True)
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = PropertySerializer(data=request.data)
+        serializer = EdificationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
@@ -37,48 +50,48 @@ class PropertyListAV(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PropertyDetailAV(APIView):
-    def get(self, request, id):
+class EdificationDetailAV(APIView):
+    def get(self, request, pk):
         try:
-            property = Property.objects.get(pk=id)
+            edification = Edification.objects.get(pk=pk)
 
-        except Property.DoesNotExist:
+        except Edification.DoesNotExist:
             return Response({'Error': 'El inmueble no existe'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = PropertySerializer(property)
+        serializer = EdificationSerializer(edification)
         return Response(serializer.data)
 
-    def put(self, request, id):
+    def put(self, request, pk):
         try:
-            property = Property.objects.get(pk=id)
-        except Property.DoesNotExist:
+            edification = Edification.objects.get(pk=pk)
+        except Edification.DoesNotExist:
             return Response({'Error': 'El inmueble no existe'}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = PropertySerializer(property, data=request.data)
+        serializer = EdificationSerializer(edification, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, id):
+    def delete(self, request, pk):
         try:
-            property = Property.objects.get(pk=id)
-        except Property.DoesNotExist:
+            edification = Edification.objects.get(pk=pk)
+        except Edification.DoesNotExist:
             return Response({'Error': 'El inmueble no existe'}, status=status.HTTP_404_NOT_FOUND)
 
-        property.delete()
+        edification.delete()
         return Response({'message': 'El inmueble ha sido eliminado'}, status=status.HTTP_204_NO_CONTENT)
 
 
 # @api_view(['GET', 'POST'])
-# def property_list(request):
+# def edification_list(request):
 #     if request.method == 'GET':
-#         state = Property.objects.all()
-#         serializer = PropertySerializer(state, many=True)
+#         state = edification.objects.all()
+#         serializer = EdificationSerializer(state, many=True)
 #         return Response(serializer.data)
 
 #     if request.method == 'POST':
-#         de_serializer = PropertySerializer(data=request.data)
+#         de_serializer = EdificationSerializer(data=request.data)
 #         if de_serializer.is_valid():
 #             de_serializer.save()
 #             return Response(de_serializer.data, status=201)
@@ -87,18 +100,18 @@ class PropertyDetailAV(APIView):
 
 
 # @api_view(['GET', 'PUT', 'DELETE'])
-# def property_detail(request, id):
+# def edification_detail(request, id):
 #     if request.method == 'GET':
 #         try:
-#             property = Property.objects.get(pk=id)
-#             serializer = PropertySerializer(property)
+#             edification = edification.objects.get(pk=id)
+#             serializer = EdificationSerializer(edification)
 #             return Response(serializer.data)
-#         except Property.DoesNotExist:
+#         except edification.DoesNotExist:
 #             return Response({'Error': 'El inmueble no existe'}, status=status.HTTP_404_NOT_FOUND)
 
 #     if request.method == 'PUT':
-#         property = Property.objects.get(pk=id)
-#         de_serializer = PropertySerializer(property, data=request.data)
+#         edification = edification.objects.get(pk=id)
+#         de_serializer = EdificationSerializer(edification, data=request.data)
 #         if de_serializer.is_valid():
 #             de_serializer.save()
 #             return Response(de_serializer.data)
@@ -107,9 +120,9 @@ class PropertyDetailAV(APIView):
 
 #     if request.method == 'DELETE':
 #         try:
-#             property = Property.objects.get(pk=id)
-#             property.delete()
-#         except Property.DoesNotExist:
+#             edification = edification.objects.get(pk=id)
+#             edification.delete()
+#         except edification.DoesNotExist:
 #             return Response({'Error': 'El inmueble no existe'}, status=status.HTTP_404_NOT_FOUND)
 
 #         return Response(status=status.HTTP_204_NO_CONTENT)

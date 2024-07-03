@@ -1,11 +1,11 @@
 from django.urls import path
 # from statelist_app.api.views import property_list, property_detail
-from statelist_app.api.views import PropertyListAV, PropertyDetailAV, CompanyAV
+from statelist_app.api.views import EdificationListAV, EdificationDetailAV, CompanyAV
 
 
 urlpatterns = [
-    path('list/',PropertyListAV.as_view(), name='prop_list'),
-    path('<int:id>', PropertyDetailAV.as_view(), name='prop_detail'),
-    path('company/',CompanyAV.as_view(), name='company'),
+    path('list/', EdificationListAV.as_view(), name='edification-list'),
+    path('<int:pk>', EdificationDetailAV.as_view(), name='edification-detail'),
+    path('company/', CompanyAV.as_view(), name='company'),
 
 ]
