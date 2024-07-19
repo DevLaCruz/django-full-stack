@@ -1,8 +1,15 @@
 from rest_framework import serializers
-from statelist_app.models import Edification, Company
+from statelist_app.models import Edification, Company, Comentary
+
+
+class ComentarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comentary
+        fields = '__all__'
 
 
 class EdificationSerializer(serializers.ModelSerializer):
+    comentaries=ComentarySerializer(many=True, read_only=True)
     # length_address=serializers.SerializerMethodField()
 
     class Meta:

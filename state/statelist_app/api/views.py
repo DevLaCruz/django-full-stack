@@ -1,11 +1,18 @@
 from rest_framework.response import Response
-from statelist_app.models import Edification, Company
-from statelist_app.api.serializers import EdificationSerializer, CompanySerializer
+from statelist_app.models import Edification, Company,Comentary
+from statelist_app.api.serializers import EdificationSerializer, CompanySerializer, ComentarySerializer
 # from rest_framework.decorators import api_view
-from rest_framework import status
+from rest_framework import status, mixins, generics
 from rest_framework.views import APIView
 
 # Create your views here.
+
+class ComentaryList(mixins.ListModelMixin, mixins.CreatedModelMixin, generics.GenericAPIView):
+    queryset = Comentary.objects.all()
+    serializer_class = ComentarySerializer
+
+    def get(self, request, *args, **kwargs):
+
 
 
 class CompanyAV(APIView):
