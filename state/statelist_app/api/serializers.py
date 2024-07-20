@@ -3,13 +3,16 @@ from statelist_app.models import Edification, Company, Comentary
 
 
 class ComentarySerializer(serializers.ModelSerializer):
+    comentary_user = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = Comentary
-        fields = '__all__'
+        exclude = ['edification']
+        # fields = '__all__'
 
 
 class EdificationSerializer(serializers.ModelSerializer):
-    comentaries=ComentarySerializer(many=True, read_only=True)
+    comentaries = ComentarySerializer(many=True, read_only=True)
     # length_address=serializers.SerializerMethodField()
 
     class Meta:
@@ -19,7 +22,7 @@ class EdificationSerializer(serializers.ModelSerializer):
         # exclude=['id']
 
 
-class CompanySerializer(serializers.HyperlinkedModelSerializer):
+class CompanySerializer(serializers.ModelSerializer):
     edificacionlist = EdificationSerializer(many=True, read_only=True)
     # edificacionlist=serializers.StringRelatedField(many=True, read_only=True)
     # edificacionlist = serializers.PrimaryKeyRelatedField(

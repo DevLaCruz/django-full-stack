@@ -1,18 +1,100 @@
 from rest_framework.response import Response
-from statelist_app.models import Edification, Company,Comentary
+from statelist_app.models import Edification, Company, Comentary
 from statelist_app.api.serializers import EdificationSerializer, CompanySerializer, ComentarySerializer
 # from rest_framework.decorators import api_view
-from rest_framework import status, mixins, generics
+from rest_framework import status, mixins, generics, viewsets
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 
-class ComentaryList(mixins.ListModelMixin, mixins.CreatedModelMixin, generics.GenericAPIView):
+
+class ComentaryCreate(generics.CreateAPIView):
+    serializer_class = ComentarySerializer
+
+    def perform_create(self, serializer):
+        pk = self.kwargs.get('pk')
+        property = Edification.objects.get(pk=pk)
+        serializer.save(edification=property)
+
+
+class ComentaryList(generics.ListCreateAPIView):
+    # queryset = Comentary.objects.all()
+    serializer_class = ComentarySerializer
+
+    def get_queryset(self):
+        pk = self.kwargs['pk']
+        return Comentary.objects.filter(edification=pk)
+
+
+class ComentaryDetail(generics.RetrieveUpdateAPIView):
     queryset = Comentary.objects.all()
     serializer_class = ComentarySerializer
 
-    def get(self, request, *args, **kwargs):
 
+# class ComentaryList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+#     queryset = Comentary.objects.all()
+#     serializer_class = ComentarySerializer
+
+#     def get(self, request, *args, **kwargs):
+#         return self.list(request, *args, **kwargs)
+
+#     def post(self, request, *args, **kwargs):
+#         return self.create(request, *args, **kwargs)
+
+
+# class ComentaryDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
+#     queryset = Comentary.objects.all()
+#     serializer_class = ComentarySerializer
+
+#     def get(self, request, *args, **kwargs):
+#         return self.retrieve(request, *args, **kwargs)
+
+
+class CompanyVS(viewsets.ModelViewSet):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+# class CompanyVS(viewsets.ViewSet):
+#     def list(self, request):
+#         queryset = Company.objects.all()
+#         serializers = ComentarySerializer(queryset, many=True)
+#         return Response(serializers.data)
+
+#     def retrieve(self, request, pk=None):
+#         queryset = Company.objects.all()
+#         edificationlist = get_object_or_404(queryset, pk=pk)
+#         serializer = CompanySerializer(edificationlist)
+#         return Response(serializer.data)
+
+#     def create(self, request):
+#         serializer = ComentarySerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#     def update(self, request, pk=None):
+#         try:
+#             company = Company.objects.get(pk=pk)
+#         except Company.DoesNotExist:
+#             return Response({'Error': 'La empresa no se encontró'}, status=status.HTTP_404_NOT_FOUND)
+
+#         serializer = Company(company, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#     def destroy(self, request, pk=None):
+#         try:
+#             company = Company.objects.get(pk=pk)
+#         except Company.DoesNotExist:
+#             return Response({'Error': 'La empresa no se encontró'}, status=status.HTTP_404_NOT_FOUND)
+
+#         company.delete()
+#         return Response({'message': 'La empresa ha sido eliminada'}, status=status.HTTP_204_NO_CONTENT)
 
 
 class CompanyAV(APIView):
@@ -39,7 +121,7 @@ class CompanyDetailAV(APIView):
             return Response({'Error': 'La empresa no existe'}, status=status.HTTP_404_NOT_FOUND)
         serializer = CompanySerializer(company, context={'request': request})
         return Response(serializer.data)
-    
+
 
 class EdificationListAV(APIView):
 
