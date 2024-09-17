@@ -5,17 +5,38 @@ from statelist_app.api.serializers import EdificationSerializer, CompanySerializ
 from rest_framework import status, mixins, generics, viewsets
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
+from statelist_app.api.permissions import AdminOrReadOnly, ComentaryUserOrReadOnly
 # Create your views here.
 
 
 class ComentaryCreate(generics.CreateAPIView):
     serializer_class = ComentarySerializer
 
+    def get_queryset(self):
+        return Comentary.objects.all()
+
     def perform_create(self, serializer):
         pk = self.kwargs.get('pk')
         property = Edification.objects.get(pk=pk)
-        serializer.save(edification=property)
+
+        user = self.request.user
+        comentary_queryset = Comentary.objects.filter(
+            edification=property, comentary_user=user)
+        if comentary_queryset.exists():
+            raise ValidationError('El ususario ya escribio comentario pa esto')
+
+        if property.number_calification == 0:
+            property.avg_calification = serializer.validated_data['calification']
+        else:
+            property.avg_calification = (
+                serializer.validated_data['calification'] + property.avg_calification)/2
+
+        property.number_calification = property.number_calification + 1
+        property.save()
+
+        serializer.save(edification=property, comentary_user=user)
 
 
 class ComentaryList(generics.ListCreateAPIView):
@@ -27,9 +48,10 @@ class ComentaryList(generics.ListCreateAPIView):
         return Comentary.objects.filter(edification=pk)
 
 
-class ComentaryDetail(generics.RetrieveUpdateAPIView):
+class ComentaryDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comentary.objects.all()
     serializer_class = ComentarySerializer
+    permission_classes = [ComentaryUserOrReadOnly]
 
 
 # class ComentaryList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
@@ -52,13 +74,14 @@ class ComentaryDetail(generics.RetrieveUpdateAPIView):
 
 
 class CompanyVS(viewsets.ModelViewSet):
+    permission_classes = [AdminOrReadOnly]
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
 # class CompanyVS(viewsets.ViewSet):
 #     def list(self, request):
 #         queryset = Company.objects.all()
 #         serializers = ComentarySerializer(queryset, many=True)
-#         return Response(serializers.data)
+#         return Response(serializer.data)
 
 #     def retrieve(self, request, pk=None):
 #         queryset = Company.objects.all()

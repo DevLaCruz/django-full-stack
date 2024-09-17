@@ -20,6 +20,8 @@ class Edification(models.Model):
     description = models.CharField(max_length=500)
     image = models.CharField(max_length=250)
     active = models.BooleanField(default=True)
+    avg_calification = models.FloatField(default=0)
+    number_calification = models.IntegerField(default=0)
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name='edificacionlist')
     create = models.DateTimeField(auto_now_add=True)
@@ -34,7 +36,7 @@ class Comentary(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(5)])
     text = models.CharField(max_length=200, null=True)
     edification = models.ForeignKey(
-        Edification, on_delete=models.CASCADE, related_name='comentarios')
+        Edification, on_delete=models.CASCADE, related_name='comentaries')
     active = models.BooleanField(default=True)
     created = models.DateField(auto_now_add=True)
     update = models.DateField(auto_now=True)
