@@ -25,24 +25,36 @@ class ComentaryCreate(generics.CreateAPIView):
         comentary_queryset = Comentary.objects.filter(
             edification=property, comentary_user=user)
         if comentary_queryset.exists():
-            raise ValidationError('El ususario ya escribio comentario pa esto')
+            raise ValidationError(
+                'El usuario ya escribió un comentario para esta propiedad')
 
+        # Obtener la nueva calificación
+        new_calification = serializer.validated_data['calification']
+
+        # Calcular el nuevo promedio ponderado
         if property.number_calification == 0:
-            property.avg_calification = serializer.validated_data['calification']
+            property.avg_calification = new_calification
         else:
-            property.avg_calification = (
-                serializer.validated_data['calification'] + property.avg_calification)/2
+            total_califications = property.number_calification
+            current_avg = property.avg_calification
 
-        property.number_calification = property.number_calification + 1
+            # Promedio ponderado
+            property.avg_calification = (
+                (current_avg * total_califications) + new_calification
+            ) / (total_califications + 1)
+
+        # Incrementar el número de calificaciones
+        property.number_calification += 1
         property.save()
 
+        # Guardar el comentario
         serializer.save(edification=property, comentary_user=user)
 
 
 class ComentaryList(generics.ListCreateAPIView):
     # queryset = Comentary.objects.all()
     serializer_class = ComentarySerializer
-
+    permission_classes=[IsAuthenticated]
     def get_queryset(self):
         pk = self.kwargs['pk']
         return Comentary.objects.filter(edification=pk)
