@@ -7,12 +7,31 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
-from statelist_app.api.permissions import AdminOrReadOnly, ComentaryUserOrReadOnly
+from statelist_app.api.permissions import IsAdminOrReadOnly, IsComentaryUserOrReadOnly
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
+from .throttling import ComentaryCreateThrottle, ComentaryListThrottle
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+
 # Create your views here.
+
+
+class UserComentary(generics.ListAPIView):
+    serializer_class = ComentarySerializer
+
+    # def get_queryset(self):
+    #     username = self.kwargs['username']
+    #     return Comentary.objects.filter(comentary_user__username=username)
+
+    def get_queryset(self):
+        username = self.request.query_params.get('username', None)
+        return Comentary.objects.filter(comentary_user__username=username)
 
 
 class ComentaryCreate(generics.CreateAPIView):
     serializer_class = ComentarySerializer
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ComentaryCreateThrottle]
 
     def get_queryset(self):
         return Comentary.objects.all()
@@ -54,7 +73,11 @@ class ComentaryCreate(generics.CreateAPIView):
 class ComentaryList(generics.ListCreateAPIView):
     # queryset = Comentary.objects.all()
     serializer_class = ComentarySerializer
-    permission_classes=[IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+    throttle_classes = [ComentaryListThrottle, AnonRateThrottle]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['comentary_user__username', 'active']
+
     def get_queryset(self):
         pk = self.kwargs['pk']
         return Comentary.objects.filter(edification=pk)
@@ -63,7 +86,9 @@ class ComentaryList(generics.ListCreateAPIView):
 class ComentaryDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comentary.objects.all()
     serializer_class = ComentarySerializer
-    permission_classes = [ComentaryUserOrReadOnly]
+    permission_classes = [IsComentaryUserOrReadOnly]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'comentary-detail'
 
 
 # class ComentaryList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
@@ -86,7 +111,7 @@ class ComentaryDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class CompanyVS(viewsets.ModelViewSet):
-    permission_classes = [AdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
 # class CompanyVS(viewsets.ViewSet):
@@ -155,10 +180,31 @@ class CompanyDetailAV(APIView):
         except Company.DoesNotExist:
             return Response({'Error': 'La empresa no existe'}, status=status.HTTP_404_NOT_FOUND)
         serializer = CompanySerializer(company, context={'request': request})
-        return Response(serializer.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            company = Company.objects.get(pk=pk)
+        except Company.DoesNotExist:
+            return Response({'Error': 'La empresa no existe'}, status=status.HTTP_404_NOT_FOUND)
+        company.delete()
+        return Response({'message': 'La empresa ha sido eliminada'}, status=status.HTTP_204_NO_CONTENT)
 
 
-class EdificationListAV(APIView):
+class EdificationList(generics.ListAPIView):
+    queryset = Edification.objects.all()
+    serializer_class = EdificationSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['address', 'company__name']
+
+
+class EdificationAV(APIView):
+
+    permission_classes = [IsAdminOrReadOnly]
 
     def get(self, request):
         state = Edification.objects.all()
@@ -175,6 +221,8 @@ class EdificationListAV(APIView):
 
 
 class EdificationDetailAV(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
     def get(self, request, pk):
         try:
             edification = Edification.objects.get(pk=pk)

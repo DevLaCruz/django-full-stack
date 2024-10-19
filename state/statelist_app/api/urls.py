@@ -1,16 +1,19 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 # from statelist_app.api.views import property_list, property_detail
-from statelist_app.api.views import (EdificationListAV, EdificationDetailAV,
+from statelist_app.api.views import (EdificationAV, EdificationDetailAV,
                                      CompanyAV, CompanyDetailAV, ComentaryList,
-                                     ComentaryDetail, ComentaryCreate, CompanyVS)
+                                     ComentaryDetail, ComentaryCreate, CompanyVS,
+                                     UserComentary, EdificationList)
 
-#Use viewsets the not havingtwo or more entities
+# Use viewsets the not havingtwo or more entities
 router = DefaultRouter()
 router.register('company', CompanyVS, basename='company')
 
 urlpatterns = [
-    path('edification/', EdificationListAV.as_view(), name='edification'),
+    path('edification/', EdificationAV.as_view(), name='edification'),
+    path('edification/list/',
+         EdificationList.as_view(), name='edification-list'),
     path('edification/<int:pk>', EdificationDetailAV.as_view(),
          name='edification-detail'),
 
@@ -27,4 +30,13 @@ urlpatterns = [
 
     path('edification/comentary/<int:pk>',
          ComentaryDetail.as_view(), name='comentary-detail'),
+
+    #     path('edification/comentary/<str:username>',
+    #          UserComentary.as_view(), name='user-comentary-detail'),
+
+    path('edification/comentary/',
+         UserComentary.as_view(), name='user-comentary-detail'),
+
+
+
 ]

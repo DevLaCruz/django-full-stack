@@ -13,6 +13,7 @@ class ComentarySerializer(serializers.ModelSerializer):
 
 class EdificationSerializer(serializers.ModelSerializer):
     comentaries = ComentarySerializer(many=True, read_only=True)
+    company_name = serializers.CharField(source='company.name')
     # length_address=serializers.SerializerMethodField()
 
     class Meta:
