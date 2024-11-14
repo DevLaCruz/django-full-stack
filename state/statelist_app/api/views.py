@@ -12,6 +12,7 @@ from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, Scoped
 from .throttling import ComentaryCreateThrottle, ComentaryListThrottle
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from .pagination import EdificationPagination, EdificationLOPagination
 
 # Create your views here.
 
@@ -200,6 +201,7 @@ class EdificationList(generics.ListAPIView):
     serializer_class = EdificationSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['address', 'company__name']
+    pagination_class = EdificationPagination
 
 
 class EdificationAV(APIView):

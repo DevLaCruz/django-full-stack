@@ -5,6 +5,7 @@ from rest_framework.authtoken.models import Token
 # from user_app import models
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib import auth
 
 
 @api_view(['POST',])
@@ -25,6 +26,10 @@ def registration_view(request):
             data['response'] = 'El registro del usuario fue exitoso'
             data['username'] = account.username
             data['email'] = account.email
+            data['first_name'] = account.first_name
+            data['last_name'] = account.last_name
+            data['phone_number'] = account.phone_number
+
             # token = Token.objects.get(user=account).key
             # data['token'] = token
 
@@ -33,7 +38,32 @@ def registration_view(request):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token)
             }
+            return Response(data, status=status.HTTP_201_CREATED)
         else:
-            data = serializer.errors
+            return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response(data)
+
+@api_view(['POST'])
+def login_view(request):
+    data = {}
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        account = auth.authenticate(email=email, password=password)
+
+        if account is not None:
+            data['response'] = 'El Login fue exitoso'
+            data['username'] = account.username
+            data['email'] = account.email
+            data['first_name'] = account.first_name
+            data['last_name'] = account.last_name
+            data['phone_number'] = account.phone_number
+            refresh = RefreshToken.for_user(account)
+            data['token'] = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }
+            return Response(data)
+        else:
+            data['error'] = "Credenciales incorrectas"
+            return Response(data, status.HTTP_500_INTERNAL_SERVER_ERROR)

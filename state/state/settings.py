@@ -76,7 +76,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'state.wsgi.application'
 
-
+AUTH_USER_MODEL = 'user_app.Account'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -148,13 +148,16 @@ REST_FRAMEWORK = {
         'comentary-create': '2/day',
         'comentary-list': '8/day',
         'comentary-detail': '3/day/'
-    }
+    },
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # 'PAGE_SIZE': 2,
+
 }
 
 # Simple JWT settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=365),
-    # 'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=365),
     # 'ALGORITHM': 'HS256',
     # 'SIGNING_KEY': SECRET_KEY,
     # 'VERIFYING_KEY': None,
@@ -165,4 +168,5 @@ SIMPLE_JWT = {
     # 'USER_ID_FIELD': 'id',
     # 'USER_ID_CLAIM': 'user_id',
     'ROTATE_REFRESH_TOKENS': True,
+
 }
