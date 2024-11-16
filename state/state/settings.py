@@ -143,11 +143,11 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',
-        'user': '3/day',
-        'comentary-create': '2/day',
-        'comentary-list': '8/day',
-        'comentary-detail': '3/day/'
+        'anon': '1000/day',
+        'user': '300/day',
+        'comentary-create': '20/day',
+        'comentary-list': '80/day',
+        'comentary-detail': '30/day/'
     },
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     # 'PAGE_SIZE': 2,
